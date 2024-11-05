@@ -1,4 +1,4 @@
-import { PanelRowCellProps } from "./MarketDepthPanelRow";
+import { PanelRowCellProps } from "./MarketDepthPanel";
 import "./PriceCell.css";
 
 interface PriceCellProps extends PanelRowCellProps {

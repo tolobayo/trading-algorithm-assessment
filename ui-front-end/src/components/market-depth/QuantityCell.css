@@ -3,4 +3,6 @@
 }
 .BidCell {
   background-color: rgba(0, 123, 180, 1);
+  float: right;
+  text-align: right;
 }
