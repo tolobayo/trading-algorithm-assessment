@@ -1,9 +1,17 @@
 import { PanelRowCellProps } from "./MarketDepthPanelRow";
+import "./PriceCell.css";
 
 interface PriceCellProps extends PanelRowCellProps {
   price: number;
 }
 
 export const PriceCell = (props: PriceCellProps) => {
-  return <td>{props.price}</td>;
+  return (
+    <td>
+      <div className={`PriceCell ${props.column === "ask" ? "reverse" : ""}`}>
+        <span>^</span>
+        <span>{props.price}</span>
+      </div>
+    </td>
+  );
 };

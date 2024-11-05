@@ -1,0 +1,6 @@
+.PriceCell {
+  display: flex;
+}
+.reverse {
+  flex-direction: row-reverse;
+}
