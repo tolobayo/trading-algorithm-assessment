@@ -1,0 +1,9 @@
+.MarketDepthPanel {
+  border-collapse: collapse;
+  border: 1px solid lightgray;
+}
+
+.MarketDepthPanel th,
+.MarketDepthPanel td {
+  border: 1px solid lightgray;
+}

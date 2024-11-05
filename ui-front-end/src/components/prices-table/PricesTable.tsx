@@ -59,5 +59,5 @@ export const PricesTable = () => {
     []
   );
 
-  return <Table config={config} dataSource={dataSource} />;
+  // return <Table config={config} dataSource={dataSource} />;
 };
