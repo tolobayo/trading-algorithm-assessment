@@ -1,6 +1,7 @@
 package codingblackfemales.gettingstarted;
 
 import codingblackfemales.algo.AlgoLogic;
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 
@@ -22,14 +23,28 @@ public class MyAlgoTest extends AbstractAlgoTest {
         return new MyAlgoLogic();
     }
 
-
+    //Creates a new order at lowest bid
     @Test
-    public void testDispatchThroughSequencer() throws Exception {
-
-        //create a sample market data tick....
+    public void testCreateOrderWithLowestBid() throws Exception {
         send(createTick());
 
-        //simple assert to check we had 3 orders created
-        //assertEquals(container.getState().getChildOrders().size(), 3);
+        assertEquals(1, container.getState().getChildOrders().size());
+
+        var order = container.getState().getChildOrders().stream().findFirst();
+        assertEquals(100, order.get().getPrice());
     }
+    
+    //Updates order to add new low bid
+    @Test
+    public void testAddNewLowBid() throws Exception {
+        send(createTick());
+        var firstOrder = container.getState().getActiveChildOrders().stream().findFirst();
+        assertEquals(100, firstOrder.get().getPrice());
+
+        send(createTickWithLowerBids());
+
+        var secondOrder = container.getState().getActiveChildOrders().stream().findFirst();
+        assertEquals(73, secondOrder.get().getPrice());
+    }
+    
 }

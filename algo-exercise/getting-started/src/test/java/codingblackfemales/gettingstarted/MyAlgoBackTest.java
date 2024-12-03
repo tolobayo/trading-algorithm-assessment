@@ -1,6 +1,10 @@
 package codingblackfemales.gettingstarted;
 
 import codingblackfemales.algo.AlgoLogic;
+import codingblackfemales.sotw.OrderState;
+
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
 /**
@@ -22,24 +26,25 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
         return new MyAlgoLogic();
     }
 
+
+    //Cancels orders that are out of range
     @Test
-    public void testExampleBackTest() throws Exception {
-        //create a sample market data tick....
+    public void testCancelOutOfRangeOrders() throws Exception {
+       
         send(createTick());
 
-        //ADD asserts when you have implemented your algo logic
-        //assertEquals(container.getState().getChildOrders().size(), 3);
+        //Check that algo creates order for inital low bid
+        var order = container.getState().getChildOrders().stream().findFirst();
+        assertEquals(91, order.get().getPrice());
 
-        //when: market data moves towards us
-        send(createTick2());
+        //Market data adds new low bid out of bidding range
+        send(createTickWithLowBidsOutOfRange());
 
-        //then: get the state
-        var state = container.getState();
+        long numCancelled = container.getState().getChildOrders().stream().filter(option -> option.getState() == OrderState.CANCELLED).count();
 
-        //Check things like filled quantity, cancelled order count etc....
-        //long filledQuantity = state.getChildOrders().stream().map(ChildOrder::getFilledQuantity).reduce(Long::sum).get();
-        //and: check that our algo state was updated to reflect our fills when the market data
-        //assertEquals(225, filledQuantity);
+        //Check that old out of range bids have been cancelled
+        assertEquals(2, container.getState().getChildOrders().size());
+        assertEquals(1, numCancelled);
     }
 
 }

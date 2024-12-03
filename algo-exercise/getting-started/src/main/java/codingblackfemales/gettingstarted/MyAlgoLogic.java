@@ -1,12 +1,15 @@
 package codingblackfemales.gettingstarted;
 
 import codingblackfemales.action.Action;
+import codingblackfemales.action.CancelChildOrder;
+import codingblackfemales.action.CreateChildOrder;
 import codingblackfemales.action.NoAction;
 import codingblackfemales.algo.AlgoLogic;
 import codingblackfemales.sotw.ChildOrder;
 import codingblackfemales.sotw.SimpleAlgoState;
-import codingblackfemales.sotw.marketdata.AskLevel;
+import codingblackfemales.sotw.marketdata.BidLevel;
 import codingblackfemales.util.Util;
+import messages.order.Side;
 
 import java.util.List;
 
@@ -24,46 +27,54 @@ public class MyAlgoLogic implements AlgoLogic {
 
         logger.info("[MYALGO] The state of the order book is:\n" + orderBookAsString);
 
-        //TODO: Adapt this to only buy for historically low prices
-
         /* OBJECTIVE
-         * Create buy orders for the lowest price on market
-         * 
-         * STEPS
-         * 1. Find lowest ask price on the market
-         * 2. Check active orders to see if prices are lower or higher
-         * 3. If prices are higher cancel current active orders and create new    order w/ low price
-         *
-         * QUESTIONS
-         * How are we meant to implement the logic for when to create and cancel an order, what are the contrainsts?
-         * Can you only have one active child order at a time?
-         * Do we need to set a limit for how many orders we can have at once?
-         * What is the difference between a child order and an active child order?
+         * Create an algo that adds buy orders for the lowest price on market and cancels orders that are not within range of lowest bid (i.e. price is set too high above or too below lowest market rate)
+         * This algo ensures bids are always within market value and set for best price
          */
 
-         //
+        //Set bidding range
+        final int BIDDING_RANGE = 3;
 
-         //Find lowest price on the market
-        //  int lowestAskIdx = 0;
-        //  for (int i = 0; i < state.getAskLevels(); i++) {
-        //     final AskLevel ask = state.getAskAt(i);
-        //     if (ask.price < state.getAskAt(lowestAskIdx).price) {
-        //         lowestAskIdx = i;
-        //     }
-        //  }
-        //  final List<ChildOrder> activeOrders = state.getActiveChildOrders();
-        //  for (ChildOrder option : activeOrders) {
-        //     if (option.getSide().equals(Side.BUY))
+         //Find lowest bidding price on the market
+         int lowestBidIdx = 0;
+         for (int i = 0; i < state.getBidLevels(); i++) {
+            final BidLevel ask = state.getBidAt(i);
+            if (ask.price < state.getBidAt(lowestBidIdx).price) {
+                lowestBidIdx = i;
+            }
+         }
 
-        //  }
+         final List<ChildOrder> activeOrders = state.getActiveChildOrders();
 
+         BidLevel lowestBid = state.getBidAt(lowestBidIdx);
 
+         //Find active orders that match the current low
+         long numLowBuyOrders = activeOrders
+                        .stream()
+                        .filter(order -> 
+                            order.getSide().equals(Side.BUY) && 
+                            order.getPrice() == lowestBid.price)
+                        .count();
 
-         
+         //If there are no active buy orders equal to the current lowest bid, create one
+         if (numLowBuyOrders == 0) {
+            logger.info("[MYALGO] Adding order for " + lowestBid.quantity + " @ " + lowestBid.price);
+            return new CreateChildOrder(Side.BUY, lowestBid.quantity, lowestBid.price);
 
-         logger.info("[MYALGO] The current bid levels is: " + state.getBidLevels());
-         logger.info("[MYALGO] The current ask levels is: " + state.getAskLevels());
+        //Otherwise cancel any buy order that is not within range of lowest bid
+         } else {
+             for (ChildOrder option : activeOrders) {
+                if (option.getSide().equals(Side.BUY)) {
+                    if (option.getPrice() > (lowestBid.price + BIDDING_RANGE) ||
+                        option.getPrice() < (lowestBid.price - BIDDING_RANGE)) {
+                        logger.info("[MYALGO] Cancelling Order ID: " + option.getOrderId());
+                        return new CancelChildOrder(option);
+                    }
+                }
+             }
+         }
 
+        logger.info("[MYALGO] No action occured.");
         return NoAction.NoAction;
     }
 }

@@ -87,7 +87,7 @@ public abstract class AbstractAlgoBackTest extends SequencerTestCase {
         return directBuffer;
     }
 
-    protected UnsafeBuffer createTick2(){
+    protected UnsafeBuffer createTickWithLowBidsOutOfRange(){
 
         final MessageHeaderEncoder headerEncoder = new MessageHeaderEncoder();
         final BookUpdateEncoder encoder = new BookUpdateEncoder();
@@ -103,21 +103,21 @@ public abstract class AbstractAlgoBackTest extends SequencerTestCase {
         encoder.instrumentId(123L);
         encoder.source(Source.STREAM);
 
-        encoder.bidBookCount(3)
+        encoder.bidBookCount(5)
+                .next().price(68L).size(501L)
+                .next().price(52L).size(632L)
                 .next().price(95L).size(100L)
                 .next().price(93L).size(200L)
                 .next().price(91L).size(300L);
 
         encoder.askBookCount(4)
-                .next().price(98L).size(501L)
-                .next().price(101L).size(200L)
-                .next().price(110L).size(5000L)
+                .next().price(100L).size(101L)
+                .next().price(110L).size(200L)
+                .next().price(115L).size(5000L)
                 .next().price(119L).size(5600L);
 
         encoder.instrumentStatus(InstrumentStatus.CONTINUOUS);
 
         return directBuffer;
     }
-
-
 }
